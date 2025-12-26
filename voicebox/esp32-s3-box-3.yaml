@@ -38,7 +38,7 @@ substitutions:
 esphome:
   name: ${name}
   friendly_name: ${friendly_name}
-  min_version: 2025.5.0
+  min_version: 2025.10.0
   name_add_mac_suffix: true
   on_boot:
     priority: 600
@@ -222,6 +222,10 @@ media_player:
 
 micro_wake_word:
   id: mww
+  microphone:
+    microphone: box_mic
+    channels: 0
+    gain_factor: 1
   models:
     - model: okay_nabu
     #    - hey_mycroft
@@ -232,7 +236,10 @@ micro_wake_word:
 
 voice_assistant:
   id: va
-  microphone: box_mic
+  microphone:
+    microphone: box_mic
+    channels: 0
+    gain_factor: 1
   media_player: speaker_media_player
   micro_wake_word: mww
   noise_suppression_level: 2
