@@ -938,7 +938,14 @@ display:
               }
               int zero_y = gy + gh - ((0 - min_y) / range) * gh;
               it.line(gx, zero_y, gx + gw, zero_y, Color(0x80,0x80,0x80));
-              int now_x = gx + step * now.hour;
+              float interval_per_hour = prices.size() / 24.0f;
+              float now_index = (now.hour + (now.minute / 60.0f)) * interval_per_hour;
+              if (now_index < 0.0f) {
+                now_index = 0.0f;
+              } else if (now_index > (prices.size() - 1)) {
+                now_index = prices.size() - 1;
+              }
+              int now_x = gx + step * now_index;
               it.line(now_x, gy, now_x, gy + gh, Color(0xFF,0xFF,0x00));
             }
           }
@@ -1002,7 +1009,8 @@ display:
             std::transform(dryer_status.begin(), dryer_status.end(), dryer_status.begin(), ::tolower);
             if (dryer_status != "off") {
               char dryer_text[16];
-              sprintf(dryer_text, "%d min", (int)id(tumble_dryer_remaining_time).state);
+              int dryer_minutes = static_cast<int>(round(id(tumble_dryer_remaining_time).state));
+              sprintf(dryer_text, "%d min", dryer_minutes);
               it.printf(10, dryer_y, id(font_mdi), Color::WHITE, "\U000F0917");
               it.printf(45, dryer_y, id(font_energy), Color::WHITE, "%s", dryer_text);
             }
@@ -1012,7 +1020,8 @@ display:
             std::transform(wash_status.begin(), wash_status.end(), wash_status.begin(), ::tolower);
             if (wash_status != "off") {
               char wash_text[16];
-              sprintf(wash_text, "%d min", (int)id(washing_machine_remaining_time).state);
+              int wash_minutes = static_cast<int>(round(id(washing_machine_remaining_time).state));
+              sprintf(wash_text, "%d min", wash_minutes);
               it.printf(10, washer_y, id(font_mdi), Color::WHITE, "\U000F072A");
               it.printf(45, washer_y, id(font_energy), Color::WHITE, "%s", wash_text);
             }
