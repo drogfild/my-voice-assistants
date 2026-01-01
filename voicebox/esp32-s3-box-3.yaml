@@ -779,20 +779,20 @@ text_sensor:
     platform: template
     on_value:
       lambda: |-
-        if(id(text_request).state.length()>32) {
+        if (id(text_request).state.length() > 96) {
           std::string name = id(text_request).state.c_str();
-          std::string truncated = esphome::str_truncate(name.c_str(),31);
-          id(text_request).state = (truncated+"...").c_str();
+          std::string truncated = esphome::str_truncate(name.c_str(), 95);
+          id(text_request).state = (truncated + "...").c_str();
         }
 
   - id: text_response
     platform: template
     on_value:
       lambda: |-
-        if(id(text_response).state.length()>32) {
+        if (id(text_response).state.length() > 96) {
           std::string name = id(text_response).state.c_str();
-          std::string truncated = esphome::str_truncate(name.c_str(),31);
-          id(text_response).state = (truncated+"...").c_str();
+          std::string truncated = esphome::str_truncate(name.c_str(), 95);
+          id(text_response).state = (truncated + "...").c_str();
         }
 
   - platform: homeassistant
@@ -1046,20 +1046,38 @@ display:
         lambda: |-
           it.fill(id(thinking_color));
           it.image((it.get_width() / 2), (it.get_height() / 2), id(casita_thinking), ImageAlign::CENTER);
-          it.filled_rectangle(20 , 20 , 280 , 30 , Color::WHITE );
-          it.rectangle(20 , 20 , 280 , 30 , Color::BLACK );
-          it.printf(30, 25, id(font_request), Color::BLACK, "%s", id(text_request).state.c_str());
+          it.filled_rectangle(20, 20, 280, 70, Color::WHITE);
+          it.rectangle(20, 20, 280, 70, Color::BLACK);
+          std::string request_text = id(text_request).state.c_str();
+          std::string request_line_1 = request_text.substr(0, 32);
+          std::string request_line_2 = request_text.size() > 32 ? request_text.substr(32, 32) : "";
+          std::string request_line_3 = request_text.size() > 64 ? request_text.substr(64, 32) : "";
+          it.printf(30, 25, id(font_request), Color::BLACK, "%s", request_line_1.c_str());
+          it.printf(30, 43, id(font_request), Color::BLACK, "%s", request_line_2.c_str());
+          it.printf(30, 61, id(font_request), Color::BLACK, "%s", request_line_3.c_str());
           id(draw_timer_timeline).execute();
       - id: replying_page
         lambda: |-
           it.fill(id(replying_color));
           it.image((it.get_width() / 2), (it.get_height() / 2), id(casita_replying), ImageAlign::CENTER);
-          it.filled_rectangle(20 , 20 , 280 , 30 , Color::WHITE );
-          it.rectangle(20 , 20 , 280 , 30 , Color::BLACK );
-          it.filled_rectangle(20 , 190 , 280 , 30 , Color::WHITE );
-          it.rectangle(20 , 190 , 280 , 30 , Color::BLACK );
-          it.printf(30, 25, id(font_request), Color::BLACK, "%s", id(text_request).state.c_str());
-          it.printf(30, 195, id(font_response), Color::BLACK, "%s", id(text_response).state.c_str());
+          it.filled_rectangle(20, 20, 280, 70, Color::WHITE);
+          it.rectangle(20, 20, 280, 70, Color::BLACK);
+          it.filled_rectangle(20, 150, 280, 70, Color::WHITE);
+          it.rectangle(20, 150, 280, 70, Color::BLACK);
+          std::string request_text = id(text_request).state.c_str();
+          std::string response_text = id(text_response).state.c_str();
+          std::string request_line_1 = request_text.substr(0, 32);
+          std::string request_line_2 = request_text.size() > 32 ? request_text.substr(32, 32) : "";
+          std::string request_line_3 = request_text.size() > 64 ? request_text.substr(64, 32) : "";
+          std::string response_line_1 = response_text.substr(0, 32);
+          std::string response_line_2 = response_text.size() > 32 ? response_text.substr(32, 32) : "";
+          std::string response_line_3 = response_text.size() > 64 ? response_text.substr(64, 32) : "";
+          it.printf(30, 25, id(font_request), Color::BLACK, "%s", request_line_1.c_str());
+          it.printf(30, 43, id(font_request), Color::BLACK, "%s", request_line_2.c_str());
+          it.printf(30, 61, id(font_request), Color::BLACK, "%s", request_line_3.c_str());
+          it.printf(30, 155, id(font_response), Color::BLACK, "%s", response_line_1.c_str());
+          it.printf(30, 173, id(font_response), Color::BLACK, "%s", response_line_2.c_str());
+          it.printf(30, 191, id(font_response), Color::BLACK, "%s", response_line_3.c_str());
           id(draw_timer_timeline).execute();
       - id: timer_finished_page
         lambda: |-
