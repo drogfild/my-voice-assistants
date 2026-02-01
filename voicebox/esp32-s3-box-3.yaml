@@ -584,6 +584,9 @@ switch:
           announcement: true
       - delay: 15min
       - switch.turn_off: timer_ringing
+  - platform: homeassistant
+    id: sorento_webasto_lammitin
+    entity_id: switch.sorento_webasto_lammitin
 
 select:
   - platform: template
@@ -1008,9 +1011,16 @@ display:
           it.printf(it.get_width() - 10, 10, id(font_temp), Color(0xFF, 0xFF, 0x00), TextAlign::RIGHT, temp_str);
           it.printf(it.get_width() - 10, 48, id(font_temp), Color::WHITE, TextAlign::RIGHT, "%s", weather_state.c_str());
 
-          // Kuivausrummun ja pyykkikoneen j\xE4ljell\xE4 oleva aika vasempaan alanurkkaan
-          int washer_y = it.get_height() - 37; // 22px font height + 15px timeline
-          int dryer_y = washer_y - 20;
+          // Kuivausrummun, pyykkikoneen ja Webaston tilat dynaamisesti vasempaan alanurkkaan
+          struct StatusItem {
+            std::string icon;
+            std::string text;
+            bool has_icon;
+          };
+          std::vector<StatusItem> status_items;
+          if (id(sorento_webasto_lammitin).state) {
+            status_items.push_back({"", "Webasto ON", false});
+          }
           {
             std::string dryer_status = id(tumble_dryer_status).state;
             std::transform(dryer_status.begin(), dryer_status.end(), dryer_status.begin(), ::tolower);
@@ -1018,8 +1028,7 @@ display:
               char dryer_text[16];
               int dryer_minutes = static_cast<int>(round(id(tumble_dryer_remaining_time).state));
               sprintf(dryer_text, "%d min", dryer_minutes);
-              it.printf(10, dryer_y, id(font_mdi), Color::WHITE, "\U000F0917");
-              it.printf(45, dryer_y, id(font_energy), Color::WHITE, "%s", dryer_text);
+              status_items.push_back({"\U000F0917", dryer_text, true});
             }
           }
           {
@@ -1029,8 +1038,22 @@ display:
               char wash_text[16];
               int wash_minutes = static_cast<int>(round(id(washing_machine_remaining_time).state));
               sprintf(wash_text, "%d min", wash_minutes);
-              it.printf(10, washer_y, id(font_mdi), Color::WHITE, "\U000F072A");
-              it.printf(45, washer_y, id(font_energy), Color::WHITE, "%s", wash_text);
+              status_items.push_back({"\U000F072A", wash_text, true});
+            }
+          }
+          if (!status_items.empty()) {
+            int line_height = 20;
+            int base_y = it.get_height() - 37; // 22px font height + 15px timeline
+            int start_y = base_y - (static_cast<int>(status_items.size()) - 1) * line_height;
+            for (size_t i = 0; i < status_items.size(); i++) {
+              int y = start_y + (i * line_height);
+              const auto &item = status_items[i];
+              if (item.has_icon) {
+                it.printf(10, y, id(font_mdi), Color::WHITE, "%s", item.icon.c_str());
+                it.printf(45, y, id(font_energy), Color::WHITE, "%s", item.text.c_str());
+              } else {
+                it.printf(10, y, id(font_energy), Color::WHITE, "%s", item.text.c_str());
+              }
             }
           }
 
